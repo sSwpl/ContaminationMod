@@ -1,0 +1,90 @@
+name: Build Contamination Mod (Forge 1.20.1)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Download Forge MDK
+        run: |
+          curl -o forge_mdk.zip https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.1.0/forge-1.20.1-47.1.0-mdk.zip
+          unzip -q forge_mdk.zip -d forge_mdk
+
+      - name: Merge source files into MDK (copy only your sources/resources)
+        run: |
+          mkdir -p forge_mdk/src/main/java forge_mdk/src/main/resources
+
+          # Copy only intended source tree into forge_mdk
+          if [ -d "src/main/java" ]; then
+            cp -r src/main/java/* forge_mdk/src/main/java/ || true
+          fi
+
+          # Copy resources (textures/lang/etc)
+          if [ -d "src/main/resources" ]; then
+            cp -r src/main/resources/* forge_mdk/src/main/resources/ || true
+          fi
+
+          # Remove examplemod template from MDK if present
+          rm -rf forge_mdk/src/main/java/com/example/examplemod || true
+
+          # Jeśli przypadkowo kopiowaliśmy pliki w złe miejsce (guard), usuń potencjalne nadmiarowe kopie w repo root
+          rm -rf src/main/java/com/example/examplemod || true
+
+          # Upewnij się, że jest META-INF/mods.toml; jeśli go nie ma, utwórz minimalny plik (używamy printf, żeby uniknąć heredoców z wcięciami)
+          if [ ! -f forge_mdk/src/main/resources/META-INF/mods.toml ]; then
+            mkdir -p forge_mdk/src/main/resources/META-INF
+            printf '%s\n' \
+              'modLoader="javafml"' \
+              'loaderVersion="[47,)"' \
+              'license="MIT"' \
+              '' \
+              '[[mods]]' \
+              'modId="contamination"' \
+              'version="1.0.0"' \
+              'displayName="Contamination"' \
+              'description="Adds contamination and a Lugol item to protect players."' \
+              'authors="sSwpl"' \
+              > forge_mdk/src/main/resources/META-INF/mods.toml
+          fi
+
+      - name: Build mod
+        working-directory: forge_mdk
+        run: |
+          ./gradlew --no-daemon clean build
+
+      - name: Collect and rename built JAR
+        run: |
+          mkdir -p artifacts
+          # znajdź pierwszy jar w build/libs i przenieś/zmień nazwę
+          set -e
+          jars=(forge_mdk/build/libs/*.jar)
+          if [ -e "${jars[0]}" ]; then
+            echo "Found jar: ${jars[0]}"
+            # możesz dostosować wersję tutaj; ustawiamy na 1.0.0
+            mv "${jars[0]}" "artifacts/contamination-1.0.0.jar"
+          else
+            echo "No jar found in forge_mdk/build/libs - failing"
+            ls -la forge_mdk/build/libs || true
+            exit 1
+          fi
+
+      - name: Upload built mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ContaminationMod
+          path: artifacts/contamination-1.0.0.jar

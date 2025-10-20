@@ -1,0 +1,10 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="contamination"
+version="1.0.0"
+displayName="Contamination"
+description='Adds contamination and a Lugol item to protect players.'
+authors="sSwpl"
