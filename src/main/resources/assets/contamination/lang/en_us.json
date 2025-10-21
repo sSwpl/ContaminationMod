@@ -1,4 +1,6 @@
 {
-  "item.contamination.uncomplete_lugols_iodine": "Incomplete Lugol's Iodine",
-  "item.contamination.lugols_iodine": "Lugol's Iodine"
+  "item.contamination.lugol": "Lugol's Iodine",
+  "item.contamination.incomplete_lugols_iodine": "Incomplete Lugol's Iodine",
+  "item.contamination.lugol.tooltip": "Grants contamination protection for %s s",
+  "jei.contamination.category.lugol_brewing": "Brewing: Lugol's Iodine"
 }

@@ -31,6 +31,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import com.example.contamination.registry.ModItems;
+
 @Mod(ContaminationMod.MODID)
 public class ContaminationMod {
     public static final String MODID = "contamination";
@@ -58,7 +60,12 @@ public class ContaminationMod {
         // register config
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ContaminationConfig.SPEC);
 
+        // Rejestr istniejących itemów (w tym 'lugol')
         ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+
+        // Rejestr nowych itemów (półprodukt do warzenia)
+        ModItems.register(FMLJavaModLoadingContext.get().getModEventBus());
+
         MinecraftForge.EVENT_BUS.register(this);
 
         // register command listener

@@ -15,5 +15,5 @@
     { "item": "minecraft:nether_wart" },
     { "item": "minecraft:brown_mushroom" }
   ],
-  "result": { "item": "contamination:uncomplete_lugols_iodine", "count": 1 }
+  "result": { "item": "contamination:incomplete_lugols_iodine", "count": 1 }
 }

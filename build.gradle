@@ -1,0 +1,91 @@
+plugins {
+    id 'eclipse'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = '1.0.1'
+group = 'com.example.contamination'
+base {
+    archivesName = 'contamination'
+}
+
+ext {
+    mc_version = '1.20.1'
+    forge_version = '47.1.0'      // use 47.4.0 if you prefer; keep it consistent everywhere
+    jei_version = '15.2.0.23'     // JEI for 1.20.1; adjust if you want a newer 15.x that exists
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+minecraft {
+    mappings channel: 'official', version: mc_version
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            args '--username', 'Dev'
+            mods {
+                contamination {
+                    source sourceSets.main
+                }
+            }
+        }
+        server {
+            workingDirectory project.file('run')
+            mods {
+                contamination {
+                    source sourceSets.main
+                }
+            }
+        }
+        data {
+            workingDirectory project.file('run')
+            args '--mod', 'contamination', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            mods {
+                contamination {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.minecraftforge.net' }
+    // JEI main maven
+    maven { url = 'https://maven.blamejared.com' }
+    // JEI legacy mirror (some versions still hosted here)
+    maven { url = 'https://dvs1.progwml6.com/files/maven' }
+}
+
+dependencies {
+    // Forge 1.20.1
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+
+    // JEI 1.20.1 split API + runtime (correct for 1.20.1)
+    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
+}
+
+tasks.withType(ProcessResources).configureEach {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/mods.toml') {
+        expand 'version': project.version
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        // add your publishing repo if you need one
+    }
+}

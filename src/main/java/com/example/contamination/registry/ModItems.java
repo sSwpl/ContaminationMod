@@ -1,7 +1,7 @@
 package com.example.contamination.registry;
 
 import net.minecraft.world.item.Item;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -12,19 +12,13 @@ public class ModItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, "contamination");
 
     // Półprodukt craftowany w stole
-    public static final RegistryObject<Item> UNCOMPLETE_LUGOLS_IODINE = ITEMS.register(
-            "uncomplete_lugols_iodine",
+    public static final RegistryObject<Item> INCOMPLETE_LUGOLS_IODINE = ITEMS.register(
+            "incomplete_lugols_iodine",
             () -> new Item(new Item.Properties().stacksTo(16))
     );
 
-    // Finalny płyn (otrzymywany w Brewing Stand)
-    public static final RegistryObject<Item> LUGOLS_IODINE = ITEMS.register(
-            "lugols_iodine",
-            () -> new Item(new Item.Properties().stacksTo(16))
-    );
-
-    // Automatyczna rejestracja bez dotykania klasy głównej moda
-    static {
-        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+    // Rejestracja DeferredRegister na MOD Event Bus – wywoływana z konstruktora moda
+    public static void register(IEventBus bus) {
+        ITEMS.register(bus);
     }
 }
