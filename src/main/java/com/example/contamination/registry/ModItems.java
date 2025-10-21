@@ -17,12 +17,6 @@ public class ModItems {
             () -> new Item(new Item.Properties().stacksTo(16))
     );
 
-    // Finalny płyn (otrzymywany w Brewing Stand)
-    public static final RegistryObject<Item> LUGOLS_IODINE = ITEMS.register(
-            "lugols_iodine",
-            () -> new Item(new Item.Properties().stacksTo(16))
-    );
-
     // Rejestracja DeferredRegister na MOD Event Bus – wywoływana z konstruktora moda
     public static void register(IEventBus bus) {
         ITEMS.register(bus);

@@ -1,5 +1,6 @@
 package com.example.contamination.registry;
 
+import com.example.contamination.ContaminationMod;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -12,12 +13,12 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 public class ModBrewing {
     @SubscribeEvent
     public static void onCommonSetup(final FMLCommonSetupEvent event) {
-        // Ten kod zakłada, że ModItems zostało już zarejestrowane na MOD Event Bus w konstruktorze moda
         event.enqueueWork(() ->
                 BrewingRecipeRegistry.addRecipe(
                         Ingredient.of(ModItems.UNCOMPLETE_LUGOLS_IODINE.get()),
                         Ingredient.of(Items.GHAST_TEAR),
-                        new ItemStack(ModItems.LUGOLS_IODINE.get())
+                        // Finalny wynik to istniejący item 'lugol' z Twojego moda
+                        new ItemStack(ContaminationMod.LUGOL.get())
                 )
         );
     }
