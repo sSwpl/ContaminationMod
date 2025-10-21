@@ -15,7 +15,7 @@ java {
 }
 
 minecraft {
-    // Oficjalne mappingi dla 1.20.1
+    // Mappingi dla 1.20.1 (official)
     mappings channel: 'official', version: '1.20.1'
 
     runs {
@@ -51,12 +51,12 @@ minecraft {
 repositories {
     mavenCentral()
     maven { url = 'https://maven.minecraftforge.net' }
-    // JEI repo
+    // JEI
     maven { url = 'https://maven.blamejared.com' }
 }
 
 dependencies {
-    // Forge 1.20.1
+    // Forge 1.20.1 (dopasuj do tego, na czym testujesz: 47.1.0 / 47.4.0)
     minecraft 'net.minecraftforge:forge:1.20.1-47.1.0'
 
     // JEI 1.20.1 (Forge) – API do kompilacji + runtime do lokalnych testów
@@ -65,7 +65,7 @@ dependencies {
 }
 
 tasks.withType(ProcessResources).configureEach {
-    // Wstrzyknięcie wersji do mods.toml
+    // Jeśli w META-INF/mods.toml użyjesz ${version}, to zostanie wstrzyknięte
     inputs.property 'version', project.version
     filesMatching('META-INF/mods.toml') {
         expand 'version': project.version
@@ -79,6 +79,6 @@ publishing {
         }
     }
     repositories {
-        // Skonfiguruj własne repo jeśli potrzebne
+        // opcjonalnie: dodaj własne repo
     }
 }
