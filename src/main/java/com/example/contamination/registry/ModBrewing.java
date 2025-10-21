@@ -12,6 +12,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 public class ModBrewing {
     @SubscribeEvent
     public static void onCommonSetup(final FMLCommonSetupEvent event) {
+        // Ten kod zakłada, że ModItems zostało już zarejestrowane na MOD Event Bus w konstruktorze moda
         event.enqueueWork(() ->
                 BrewingRecipeRegistry.addRecipe(
                         Ingredient.of(ModItems.UNCOMPLETE_LUGOLS_IODINE.get()),

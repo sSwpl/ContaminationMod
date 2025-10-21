@@ -1,7 +1,7 @@
 package com.example.contamination.registry;
 
 import net.minecraft.world.item.Item;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -23,8 +23,8 @@ public class ModItems {
             () -> new Item(new Item.Properties().stacksTo(16))
     );
 
-    // Automatyczna rejestracja bez dotykania klasy głównej moda
-    static {
-        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+    // Rejestracja DeferredRegister na MOD Event Bus – wywoływana z konstruktora moda
+    public static void register(IEventBus bus) {
+        ITEMS.register(bus);
     }
 }
