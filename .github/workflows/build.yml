@@ -1,84 +1,168 @@
-plugins {
-    id 'eclipse'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-}
+name: Build (Forge 1.20.1)
 
-version = '1.0.1'
-group = 'com.example.contamination'
-base {
-    archivesName = 'contamination'
-}
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
 
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
-}
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-minecraft {
-    // Mappingi dla 1.20.1 (official)
-    mappings channel: 'official', version: '1.20.1'
+    permissions:
+      contents: read
 
-    runs {
-        client {
-            workingDirectory project.file('run')
-            args '--username', 'Dev'
-            mods {
-                contamination {
-                    source sourceSets.main
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Check for Gradle files
+        id: check
+        shell: bash
+        run: |
+          if [ -f "build.gradle" ]; then echo "has_build=true" >> $GITHUB_OUTPUT; else echo "has_build=false" >> $GITHUB_OUTPUT; fi
+          if [ -f "settings.gradle" ]; then echo "has_settings=true" >> $GITHUB_OUTPUT; else echo "has_settings=false" >> $GITHUB_OUTPUT; fi
+          if [ -f "gradle.properties" ]; then echo "has_props=true" >> $GITHUB_OUTPUT; else echo "has_props=false" >> $GITHUB_OUTPUT; fi
+          if [ -f "./gradlew" ]; then echo "has_wrapper=true" >> $GITHUB_OUTPUT; else echo "has_wrapper=false" >> $GITHUB_OUTPUT; fi
+
+      - name: Write build.gradle if missing
+        if: steps.check.outputs.has_build != 'true'
+        uses: DamianReeves/write-file-action@v1.3
+        with:
+          path: build.gradle
+          write-mode: overwrite
+          contents: |
+            plugins {
+                id 'eclipse'
+                id 'maven-publish'
+                id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+            }
+
+            version = '1.0.0'
+            group = 'com.example.contamination'
+            base {
+                archivesName = 'contamination'
+            }
+
+            java {
+                toolchain.languageVersion = JavaLanguageVersion.of(17)
+            }
+
+            minecraft {
+                mappings channel: 'official', version: '1.20.1'
+
+                runs {
+                    client {
+                        workingDirectory project.file('run')
+                        args '--username', 'Dev'
+                        mods {
+                            contamination {
+                                source sourceSets.main
+                            }
+                        }
+                    }
+                    server {
+                        workingDirectory project.file('run')
+                        mods {
+                            contamination {
+                                source sourceSets.main
+                            }
+                        }
+                    }
+                    data {
+                        workingDirectory project.file('run')
+                        args '--mod', 'contamination', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+                        mods {
+                            contamination {
+                                source sourceSets.main
+                            }
+                        }
+                    }
                 }
             }
-        }
-        server {
-            workingDirectory project.file('run')
-            mods {
-                contamination {
-                    source sourceSets.main
+
+            repositories {
+                mavenCentral()
+                maven { url = 'https://maven.minecraftforge.net' }
+                maven { url = 'https://maven.blamejared.com' } // JEI repo
+            }
+
+            dependencies {
+                // Dopasuj wersję Forge jeśli potrzebujesz (47.1.0 lub 47.4.0)
+                minecraft 'net.minecraftforge:forge:1.20.1-47.4.0'
+
+                // JEI 1.20.1 (Forge) – API do kompilacji + runtime do lokalnych testów
+                compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
+                runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
+            }
+
+            tasks.withType(ProcessResources).configureEach {
+                inputs.property 'version', project.version
+                filesMatching('META-INF/mods.toml') {
+                    expand 'version': project.version
                 }
             }
-        }
-        data {
-            workingDirectory project.file('run')
-            args '--mod', 'contamination', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            mods {
-                contamination {
-                    source sourceSets.main
+
+      - name: Write settings.gradle if missing
+        if: steps.check.outputs.has_settings != 'true'
+        uses: DamianReeves/write-file-action@v1.3
+        with:
+          path: settings.gradle
+          write-mode: overwrite
+          contents: |
+            pluginManagement {
+                repositories {
+                    mavenCentral()
+                    gradlePluginPortal()
+                    maven { url = 'https://maven.minecraftforge.net' }
                 }
             }
-        }
-    }
-}
+            rootProject.name = 'ContaminationMod'
 
-repositories {
-    mavenCentral()
-    maven { url = 'https://maven.minecraftforge.net' }
-    // JEI repo
-    maven { url = 'https://maven.blamejared.com' }
-}
+      - name: Write gradle.properties if missing
+        if: steps.check.outputs.has_props != 'true'
+        uses: DamianReeves/write-file-action@v1.3
+        with:
+          path: gradle.properties
+          write-mode: overwrite
+          contents: |
+            org.gradle.jvmargs=-Xmx3G -Xms1G -Dfile.encoding=UTF-8
+            org.gradle.daemon=true
+            org.gradle.parallel=true
+            org.gradle.caching=true
 
-dependencies {
-    // Forge 1.20.1 (dopasuj do swojej wersji Forge jeżeli inna)
-    minecraft 'net.minecraftforge:forge:1.20.1-47.1.0'
+            mod_name=Contamination
+            mod_version=1.0.0
 
-    // JEI 1.20.1 (Forge) – API do kompilacji + runtime do lokalnych testów
-    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
-}
+      - name: Ensure Gradle wrapper exists (generate if missing)
+        if: steps.check.outputs.has_wrapper != 'true'
+        shell: bash
+        run: |
+          echo "Gradle wrapper missing. Downloading Gradle and generating wrapper..."
+          curl -L -o gradle.zip https://services.gradle.org/distributions/gradle-8.1.1-bin.zip
+          unzip -q gradle.zip -d "$RUNNER_TEMP/gradle"
+          "$RUNNER_TEMP/gradle/gradle-8.1.1/bin/gradle" wrapper --gradle-version 8.1.1
+          chmod +x ./gradlew
 
-tasks.withType(ProcessResources).configureEach {
-    // Jeśli w META-INF/mods.toml użyjesz ${version}, to zostanie wstrzyknięte
-    inputs.property 'version', project.version
-    filesMatching('META-INF/mods.toml') {
-        expand 'version': project.version
-    }
-}
+      - name: Setup Gradle (cache & env)
+        uses: gradle/actions/setup-gradle@v3
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact jar
-        }
-    }
-    repositories {
-        // opcjonalnie: skonfiguruj własne repo publikacyjne
-    }
-}
+      - name: Build
+        run: ./gradlew --no-daemon --refresh-dependencies clean build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: contamination-mod-jars
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-javadoc.jar
