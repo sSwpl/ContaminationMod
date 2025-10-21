@@ -1,3 +1,4 @@
 {
-  "item.contamination.lugol": "Lugol's Iodine"
+  "item.contamination.uncomplete_lugols_iodine": "Incomplete Lugol's Iodine",
+  "item.contamination.lugols_iodine": "Lugol's Iodine"
 }

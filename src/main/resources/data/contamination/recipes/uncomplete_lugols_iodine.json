@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "type": "forge:nbt",
+      "item": "minecraft:potion",
+      "nbt": "{Potion:\"minecraft:water\"}"
+    },
+    { "item": "minecraft:dried_kelp_block" },
+    { "item": "minecraft:amethyst_shard" },
+    { "item": "minecraft:copper_ingot" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:glowstone_dust" },
+    { "item": "minecraft:charcoal" },
+    { "item": "minecraft:nether_wart" },
+    { "item": "minecraft:brown_mushroom" }
+  ],
+  "result": { "item": "contamination:uncomplete_lugols_iodine", "count": 1 }
+}
