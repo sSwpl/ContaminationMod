@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/potion"
+    "layer0": "contamination:item/incomplete_lugols_iodine"
   }
 }

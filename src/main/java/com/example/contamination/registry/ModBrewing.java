@@ -15,9 +15,8 @@ public class ModBrewing {
     public static void onCommonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() ->
                 BrewingRecipeRegistry.addRecipe(
-                        Ingredient.of(ModItems.UNCOMPLETE_LUGOLS_IODINE.get()),
+                        Ingredient.of(ModItems.INCOMPLETE_LUGOLS_IODINE.get()),
                         Ingredient.of(Items.GHAST_TEAR),
-                        // Finalny wynik to istniejący item 'lugol' z Twojego moda
                         new ItemStack(ContaminationMod.LUGOL.get())
                 )
         );

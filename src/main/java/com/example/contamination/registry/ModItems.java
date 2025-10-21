@@ -12,8 +12,8 @@ public class ModItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, "contamination");
 
     // Półprodukt craftowany w stole
-    public static final RegistryObject<Item> UNCOMPLETE_LUGOLS_IODINE = ITEMS.register(
-            "uncomplete_lugols_iodine",
+    public static final RegistryObject<Item> INCOMPLETE_LUGOLS_IODINE = ITEMS.register(
+            "incomplete_lugols_iodine",
             () -> new Item(new Item.Properties().stacksTo(16))
     );
 
