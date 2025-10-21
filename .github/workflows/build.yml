@@ -4,7 +4,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
-version = '1.0.0'
+version = '1.0.1'
 group = 'com.example.contamination'
 base {
     archivesName = 'contamination'
@@ -15,6 +15,7 @@ java {
 }
 
 minecraft {
+    // Mappingi dla 1.20.1 (official)
     mappings channel: 'official', version: '1.20.1'
 
     runs {
@@ -50,21 +51,34 @@ minecraft {
 repositories {
     mavenCentral()
     maven { url = 'https://maven.minecraftforge.net' }
-    maven { url = 'https://maven.blamejared.com' } // JEI repo
+    // JEI repo
+    maven { url = 'https://maven.blamejared.com' }
 }
 
 dependencies {
-    // Dopasuj wersję Forge jeśli potrzebujesz (47.1.0 lub 47.4.0)
-    minecraft 'net.minecraftforge:forge:1.20.1-47.4.0'
+    // Forge 1.20.1 (dopasuj do swojej wersji Forge jeżeli inna)
+    minecraft 'net.minecraftforge:forge:1.20.1-47.1.0'
 
-    // JEI (compileOnly + runtimeOnly) — usunie błędy importów mez­z.jei.api
+    // JEI 1.20.1 (Forge) – API do kompilacji + runtime do lokalnych testów
     compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
     runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
 }
 
 tasks.withType(ProcessResources).configureEach {
+    // Jeśli w META-INF/mods.toml użyjesz ${version}, to zostanie wstrzyknięte
     inputs.property 'version', project.version
     filesMatching('META-INF/mods.toml') {
         expand 'version': project.version
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        // opcjonalnie: skonfiguruj własne repo publikacyjne
     }
 }
