@@ -87,4 +87,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ContaminationMod
-          path: artifacts/contamination-1.0.0.jar
+          path: artifacts/contamination-1.0.1.jar
