@@ -10,13 +10,18 @@ base {
     archivesName = 'contamination'
 }
 
+ext {
+    mc_version = '1.20.1'
+    forge_version = '47.1.0' // dopasuj do tego, co masz lokalnie (47.1.0 lub 47.4.0)
+    jei_version = '15.2.0.23' // sprawdzona wersja dla 1.20.1; w razie potrzeby podmień
+}
+
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
 minecraft {
-    // Mappingi dla 1.20.1 (official)
-    mappings channel: 'official', version: '1.20.1'
+    mappings channel: 'official', version: mc_version
 
     runs {
         client {
@@ -51,21 +56,24 @@ minecraft {
 repositories {
     mavenCentral()
     maven { url = 'https://maven.minecraftforge.net' }
-    // JEI repo
+    // JEI – główne repo
     maven { url = 'https://maven.blamejared.com' }
+    // JEI – starsze artefakty bywają tu
+    maven { url = 'https://dvs1.progwml6.com/files/maven' }
 }
 
 dependencies {
-    // Forge 1.20.1 (dopasuj do swojej wersji Forge jeżeli inna)
-    minecraft 'net.minecraftforge:forge:1.20.1-47.1.0'
+    // Forge 1.20.1
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    // JEI 1.20.1 (Forge) – API do kompilacji + runtime do lokalnych testów
-    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
+    // JEI 1.20.1: API do kompilacji i pełny mod do runtime (lokalne uruchomienia/CI)
+    // API jest rozdzielone na common i forge:
+    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
 }
 
 tasks.withType(ProcessResources).configureEach {
-    // Jeśli w META-INF/mods.toml użyjesz ${version}, to zostanie wstrzyknięte
     inputs.property 'version', project.version
     filesMatching('META-INF/mods.toml') {
         expand 'version': project.version
@@ -79,6 +87,6 @@ publishing {
         }
     }
     repositories {
-        // opcjonalnie: skonfiguruj własne repo publikacyjne
+        // opcjonalnie: dodaj repo do publikacji
     }
 }
