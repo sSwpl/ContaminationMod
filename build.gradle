@@ -12,8 +12,8 @@ base {
 
 ext {
     mc_version = '1.20.1'
-    forge_version = '47.1.0' // dopasuj do tego, co masz lokalnie (47.1.0 lub 47.4.0)
-    jei_version = '15.2.0.23' // sprawdzona wersja dla 1.20.1; w razie potrzeby podmień
+    forge_version = '47.1.0'      // use 47.4.0 if you prefer; keep it consistent everywhere
+    jei_version = '15.2.0.23'     // JEI for 1.20.1; adjust if you want a newer 15.x that exists
 }
 
 java {
@@ -56,9 +56,9 @@ minecraft {
 repositories {
     mavenCentral()
     maven { url = 'https://maven.minecraftforge.net' }
-    // JEI – główne repo
+    // JEI main maven
     maven { url = 'https://maven.blamejared.com' }
-    // JEI – starsze artefakty bywają tu
+    // JEI legacy mirror (some versions still hosted here)
     maven { url = 'https://dvs1.progwml6.com/files/maven' }
 }
 
@@ -66,8 +66,7 @@ dependencies {
     // Forge 1.20.1
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    // JEI 1.20.1: API do kompilacji i pełny mod do runtime (lokalne uruchomienia/CI)
-    // API jest rozdzielone na common i forge:
+    // JEI 1.20.1 split API + runtime (correct for 1.20.1)
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
@@ -87,6 +86,6 @@ publishing {
         }
     }
     repositories {
-        // opcjonalnie: dodaj repo do publikacji
+        // add your publishing repo if you need one
     }
 }
