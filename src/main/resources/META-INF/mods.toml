@@ -4,7 +4,14 @@ license="MIT"
 
 [[mods]]
 modId="contamination"
-version="1.0.0"
+version="1.0.1"
 displayName="Contamination"
 description='Adds contamination and a Lugol item to protect players.'
 authors="sSwpl"
+
+[[dependencies.contamination]]
+modId="jei"
+mandatory=false
+versionRange="[15,)"
+ordering="NONE"
+side="CLIENT"
