@@ -2,9 +2,9 @@ name: Build (Forge 1.20.1)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "**" ]
   workflow_dispatch:
 
 jobs:
@@ -23,6 +23,120 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Generate Gradle build files if missing
+        shell: bash
+        run: |
+          if [ ! -f "build.gradle" ]; then
+            cat > build.gradle <<'EOF'
+            plugins {
+                id 'eclipse'
+                id 'maven-publish'
+                id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+            }
+
+            version = '1.0.0'
+            group = 'com.example.contamination'
+            base {
+                archivesName = 'contamination'
+            }
+
+            java {
+                toolchain.languageVersion = JavaLanguageVersion.of(17)
+            }
+
+            minecraft {
+                mappings channel: 'official', version: '1.20.1'
+
+                runs {
+                    client {
+                        workingDirectory project.file('run')
+                        args '--username', 'Dev'
+                        mods {
+                            contamination {
+                                source sourceSets.main
+                            }
+                        }
+                    }
+                    server {
+                        workingDirectory project.file('run')
+                        mods {
+                            contamination {
+                                source sourceSets.main
+                            }
+                        }
+                    }
+                    data {
+                        workingDirectory project.file('run')
+                        args '--mod', 'contamination', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+                        mods {
+                            contamination {
+                                source sourceSets.main
+                            }
+                        }
+                    }
+                }
+            }
+
+            repositories {
+                mavenCentral()
+                maven { url = 'https://maven.minecraftforge.net' }
+                maven { url = 'https://maven.blamejared.com' } // JEI
+            }
+
+            dependencies {
+                // Forge 1.20.1 (dopasuj w razie potrzeby do swojej wersji)
+                minecraft 'net.minecraftforge:forge:1.20.1-47.1.0'
+
+                // JEI 1.20.1 (Forge) – API do kompilacji + runtime do lokalnych testów
+                compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
+                runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.3.0.23")
+            }
+
+            tasks.withType(ProcessResources).configureEach {
+                inputs.property 'version', project.version
+                filesMatching('META-INF/mods.toml') {
+                    expand 'version': project.version
+                }
+            }
+
+            publishing {
+                publications {
+                    mavenJava(MavenPublication) {
+                        artifact jar
+                    }
+                }
+                repositories {
+                    // opcjonalnie: dodaj repo publikacyjne
+                }
+            }
+            EOF
+          fi
+
+          if [ ! -f "settings.gradle" ]; then
+            cat > settings.gradle <<'EOF'
+            pluginManagement {
+                repositories {
+                    mavenCentral()
+                    gradlePluginPortal()
+                    maven { url = 'https://maven.minecraftforge.net' }
+                }
+            }
+            rootProject.name = 'ContaminationMod'
+            EOF
+          fi
+
+          if [ ! -f "gradle.properties" ]; then
+            cat > gradle.properties <<'EOF'
+            org.gradle.jvmargs=-Xmx3G -Xms1G -Dfile.encoding=UTF-8
+            org.gradle.daemon=true
+            org.gradle.parallel=true
+            org.gradle.caching=true
+
+            mod_name=Contamination
+            mod_version=1.0.0
+            EOF
+          fi
 
       - name: Ensure Gradle wrapper exists (generate if missing)
         shell: bash
