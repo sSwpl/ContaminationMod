@@ -1,18 +1,18 @@
 package com.example.contamination;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ContaminationConfig {
-    public static final ForgeConfigSpec SPEC;
-    public static final ForgeConfigSpec.IntValue BARRIER_RADIUS;
-    public static final ForgeConfigSpec.IntValue PROTECTION_SECONDS;
+    public static final ModConfigSpec SPEC;
+    public static final ModConfigSpec.IntValue BARRIER_RADIUS;
+    public static final ModConfigSpec.IntValue PROTECTION_SECONDS;
 
     // Punkt 6: Konfiguracja warzenia
-    public static final ForgeConfigSpec.BooleanValue ENABLE_LUGOL_BREWING;
-    public static final ForgeConfigSpec.ConfigValue<String> BREWING_CATALYST;
+    public static final ModConfigSpec.BooleanValue ENABLE_LUGOL_BREWING;
+    public static final ModConfigSpec.ConfigValue<String> BREWING_CATALYST;
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.comment("Contamination mod settings").push("general");
 

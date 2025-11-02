@@ -19,17 +19,19 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerBossEvent;
 
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+
+import net.minecraft.core.registries.Registries;
 
 import com.example.contamination.registry.ModItems;
 
@@ -37,10 +39,10 @@ import com.example.contamination.registry.ModItems;
 public class ContaminationMod {
     public static final String MODID = "contamination";
 
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
 
-    public static final RegistryObject<Item> LUGOL = ITEMS.register("lugol",
-            () -> new LugolItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<Item> LUGOL = ITEMS.registerItem("lugol",
+            properties -> new LugolItem(properties.stacksTo(16)));
 
     // runtime overrides (set by commands) — not persisted to config file by these commands unless saved
     private static volatile int overrideRadius = -1; // blocks
@@ -56,20 +58,20 @@ public class ContaminationMod {
     // mapa graczUUID -> ServerBossEvent
     private static final Map<UUID, ServerBossEvent> BOSS_BARS = new ConcurrentHashMap<>();
 
-    public ContaminationMod() {
+    public ContaminationMod(IEventBus modBus, ModContainer modContainer) {
         // register config
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ContaminationConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, ContaminationConfig.SPEC);
 
         // Rejestr istniejących itemów (w tym 'lugol')
-        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ITEMS.register(modBus);
 
         // Rejestr nowych itemów (półprodukt do warzenia)
-        ModItems.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ModItems.register(modBus);
 
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
 
         // register command listener
-        MinecraftForge.EVENT_BUS.register(new ContaminationCommands());
+        NeoForge.EVENT_BUS.register(new ContaminationCommands());
     }
 
     // Config-aware getters
@@ -146,9 +148,8 @@ public class ContaminationMod {
     }
 
     @SubscribeEvent
-    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-        Player player = event.player;
+    public void onPlayerTick(PlayerTickEvent.Post event) {
+        Player player = event.getEntity();
 
         Level level = player.level();
         if (level.isClientSide) return;
