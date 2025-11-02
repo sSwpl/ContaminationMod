@@ -2,9 +2,13 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "type": "forge:nbt",
+      "type": "neoforge:components",
       "item": "minecraft:potion",
-      "nbt": "{Potion:\"minecraft:water\"}"
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:water"
+        }
+      }
     },
     { "item": "minecraft:dried_kelp_block" },
     { "item": "minecraft:amethyst_shard" },
@@ -15,5 +19,5 @@
     { "item": "minecraft:nether_wart" },
     { "item": "minecraft:brown_mushroom" }
   ],
-  "result": { "item": "contamination:incomplete_lugols_iodine", "count": 1 }
+  "result": { "id": "contamination:incomplete_lugols_iodine", "count": 1 }
 }
