@@ -10,6 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
@@ -25,8 +26,8 @@ public class LugolItem extends Item {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
-        // Czas „picie” jak vanillowa mikstura
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
+        // Drinking time like vanilla potion
         return 32;
     }
 
@@ -37,7 +38,7 @@ public class LugolItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        // Standardowy flow picia — zaczynamy używanie i kończymy w finishUsingItem
+        // Standard drinking flow - start using and finish in finishUsingItem
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(player.getItemInHand(hand));
     }
@@ -59,7 +60,7 @@ public class LugolItem extends Item {
                 }
             }
 
-            // Dźwięk picia i statystyka
+            // Drinking sound and statistic
             level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 1.0F, 1.0F);
             player.awardStat(Stats.ITEM_USED.get(this));
         }
@@ -67,7 +68,7 @@ public class LugolItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         int seconds = ContaminationMod.getProtectionSeconds();
         tooltip.add(Component.translatable("item.contamination.lugol.tooltip", seconds).withStyle(ChatFormatting.GRAY));
     }

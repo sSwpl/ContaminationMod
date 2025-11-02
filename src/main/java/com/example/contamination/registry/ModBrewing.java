@@ -21,26 +21,11 @@ public class ModBrewing {
                 return;
             }
 
-            // Katalizator konfigurowalny po stronie serwera (domyślnie: minecraft:ghast_tear)
-            String catalystId = ContaminationConfig.BREWING_CATALYST.get();
-            Item catalyst = Items.GHAST_TEAR;
-            if (catalystId != null && !catalystId.isBlank()) {
-                try {
-                    ResourceLocation rl = ResourceLocation.parse(catalystId);
-                    Item resolved = BuiltInRegistries.ITEM.get(rl);
-                    if (resolved != null && resolved != Items.AIR) {
-                        catalyst = resolved;
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-
-            // In NeoForge 1.21.1, brewing recipes are registered differently
-            // We need to use PotionBrewing.Builder and register it properly
-            // For now, we'll use a simpler approach compatible with the brewing system
-            final Item finalCatalyst = catalyst;
-            PotionBrewing.Builder builder = PotionBrewing.bootstrap(BuiltInRegistries.POTION);
-            // Note: The exact API may need adjustment based on NeoForge's implementation
+            // TODO: NeoForge 1.21.1 brewing recipe registration
+            // The PotionBrewing API has changed significantly in 1.21.1
+            // Brewing recipes now need to be registered through data packs or a different mechanism
+            // For now, brewing is disabled until the proper API is implemented
+            // The item can still be crafted through the crafting table recipe
         });
     }
 }

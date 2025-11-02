@@ -17,7 +17,7 @@ import java.util.List;
 
 @JeiPlugin
 public class ContaminationJeiPlugin implements IModPlugin {
-    public static final ResourceLocation UID = new ResourceLocation(ContaminationMod.MODID, "jei_plugin");
+    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ContaminationMod.MODID, "jei_plugin");
     public static final RecipeType<BrewingRecipe> LUGOL_BREWING =
             RecipeType.create(ContaminationMod.MODID, "lugol_brewing", BrewingRecipe.class);
 

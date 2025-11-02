@@ -13,7 +13,7 @@ base {
 ext {
     mc_version = '1.21.1'
     neoforge_version = '21.1.72'  // NeoForge for 1.21.1
-    jei_version = '19.20.1.88'    // JEI for 1.21.1
+    jei_version = '19.25.0.324'   // JEI for 1.21.1
 }
 
 java {

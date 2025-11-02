@@ -33,6 +33,7 @@ public class BrewingCategory implements IRecipeCategory<BrewingRecipe> {
     }
 
     @Override
+    @SuppressWarnings("removal")
     public IDrawable getBackground() {
         return background;
     }
