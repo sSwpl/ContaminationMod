@@ -10,7 +10,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 public class ContaminationCommands {
 
     @SubscribeEvent
-    public static void register(RegisterCommandsEvent event) {
+    public void register(RegisterCommandsEvent event) {
         event.getDispatcher().register(
                 Commands.literal("contamination")
                         .requires(src -> src.hasPermission(2)) // only ops by default
