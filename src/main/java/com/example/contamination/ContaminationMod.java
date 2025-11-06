@@ -45,10 +45,11 @@ public class ContaminationMod {
     private static volatile int overrideRadius = -1; // blocks
     private static volatile int overrideProtectionSeconds = -1; // seconds
 
-    // DAMAGE: zmienne z akumulacją
-    private static final float DAMAGE_PER_SECOND = 1.0f;
-    private static final float DAMAGE_PER_TICK = DAMAGE_PER_SECOND / 20.0f;
-
+    // DAMAGE: Progressive damage system - increases over time in contamination zone
+    private static final float BASE_DAMAGE_PER_SECOND = 0.5f;  // Starting damage
+    private static final float MAX_DAMAGE_PER_SECOND = 4.0f;   // Maximum damage cap
+    private static final int TICKS_TO_MAX_DAMAGE = 20 * 30;    // 30 seconds to reach max damage
+    
     // Fallback protection seconds if config missing
     private static final int FALLBACK_PROTECTION_SECONDS = 60;
 
@@ -182,8 +183,23 @@ public class ContaminationMod {
         double z = player.getZ();
 
         if (Math.abs(x) > getRadius() || Math.abs(z) > getRadius()) {
+            // Player is in contamination zone
+            
+            // Track time spent in contamination zone
+            int ticksInZone = pd.contains("contamination_ticks_in_zone") ? pd.getInt("contamination_ticks_in_zone") : 0;
+            ticksInZone++;
+            pd.putInt("contamination_ticks_in_zone", ticksInZone);
+            
+            // Calculate progressive damage based on time in zone
+            // Damage increases linearly from BASE_DAMAGE to MAX_DAMAGE over TICKS_TO_MAX_DAMAGE
+            float damageProgress = Math.min(1.0f, (float) ticksInZone / TICKS_TO_MAX_DAMAGE);
+            float currentDamagePerSecond = BASE_DAMAGE_PER_SECOND + (MAX_DAMAGE_PER_SECOND - BASE_DAMAGE_PER_SECOND) * damageProgress;
+            float damagePerTick = currentDamagePerSecond / 20.0f;
+            
+            // Accumulate damage (fractional damage is stored until it reaches 1.0)
             double acc = pd.contains("contamination_damage_acc") ? pd.getDouble("contamination_damage_acc") : 0.0;
-            acc += DAMAGE_PER_TICK;
+            acc += damagePerTick;
+            
             if (acc >= 1.0) {
                 int apply = (int) Math.floor(acc);
                 pd.putDouble("contamination_damage_acc", acc - apply);
@@ -192,7 +208,9 @@ public class ContaminationMod {
                 pd.putDouble("contamination_damage_acc", acc);
             }
         } else {
+            // Player is in safe zone - reset contamination tracking
             if (pd.contains("contamination_damage_acc")) pd.remove("contamination_damage_acc");
+            if (pd.contains("contamination_ticks_in_zone")) pd.remove("contamination_ticks_in_zone");
             if (player instanceof ServerPlayer serverPlayer) {
                 if (BOSS_BARS.containsKey(player.getUUID())) removeBossBarForPlayer(serverPlayer);
             }
