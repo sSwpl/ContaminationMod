@@ -3,12 +3,7 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "minecraft:potion",
-      "components": {
-        "minecraft:potion_contents": {
-          "potion": "minecraft:water"
-        }
-      }
+      "item": "minecraft:glass_bottle"
     },
     {
       "item": "minecraft:dried_kelp_block"

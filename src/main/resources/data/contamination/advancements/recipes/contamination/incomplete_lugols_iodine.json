@@ -6,17 +6,12 @@
     ]
   },
   "criteria": {
-    "has_water_bottle": {
+    "has_glass_bottle": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
-            "items": ["minecraft:potion"],
-            "components": {
-              "minecraft:potion_contents": {
-                "potion": "minecraft:water"
-              }
-            }
+            "items": ["minecraft:glass_bottle"]
           }
         ]
       }
@@ -34,7 +29,7 @@
   },
   "requirements": [
     [
-      "has_water_bottle"
+      "has_glass_bottle"
     ],
     [
       "has_dried_kelp_block"
