@@ -53,7 +53,7 @@ public class ContaminationMod {
     
     // VISUAL: Boundary visualization system
     private static final int BOUNDARY_VISIBILITY_RANGE = 50;   // Blocks from boundary where particles appear
-    private static final int PARTICLE_SPAWN_INTERVAL = 10;     // Ticks between particle spawns
+    private static final int PARTICLE_SPAWN_INTERVAL = 2;      // Ticks between particle spawns (every 0.1 seconds)
     
     // Fallback protection seconds if config missing
     private static final int FALLBACK_PROTECTION_SECONDS = 60;
