@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -49,6 +50,10 @@ public class ContaminationMod {
     private static final float BASE_DAMAGE_PER_SECOND = 0.5f;  // Starting damage
     private static final float MAX_DAMAGE_PER_SECOND = 4.0f;   // Maximum damage cap
     private static final int TICKS_TO_MAX_DAMAGE = 20 * 30;    // 30 seconds to reach max damage
+    
+    // VISUAL: Boundary visualization system
+    private static final int BOUNDARY_VISIBILITY_RANGE = 50;   // Blocks from boundary where particles appear
+    private static final int PARTICLE_SPAWN_INTERVAL = 10;     // Ticks between particle spawns
     
     // Fallback protection seconds if config missing
     private static final int FALLBACK_PROTECTION_SECONDS = 60;
@@ -144,6 +149,60 @@ public class ContaminationMod {
         int seconds = totalSeconds % 60;
         return String.format("%d:%02d", minutes, seconds);
     }
+    
+    // Spawn particles to visualize the contamination zone boundary
+    private void spawnBoundaryParticles(ServerLevel level, Player player, int radius) {
+        double playerX = player.getX();
+        double playerY = player.getY();
+        double playerZ = player.getZ();
+        
+        // Determine which boundaries to show based on player position
+        boolean showNorthBoundary = Math.abs(playerZ + radius) < BOUNDARY_VISIBILITY_RANGE;
+        boolean showSouthBoundary = Math.abs(playerZ - radius) < BOUNDARY_VISIBILITY_RANGE;
+        boolean showWestBoundary = Math.abs(playerX + radius) < BOUNDARY_VISIBILITY_RANGE;
+        boolean showEastBoundary = Math.abs(playerX - radius) < BOUNDARY_VISIBILITY_RANGE;
+        
+        // Spawn particles along visible boundaries
+        int particleCount = 3; // Particles per spawn call
+        
+        if (showNorthBoundary) {
+            spawnParticlesAlongLine(level, -radius, radius, -radius, playerY, particleCount);
+        }
+        if (showSouthBoundary) {
+            spawnParticlesAlongLine(level, -radius, radius, radius, playerY, particleCount);
+        }
+        if (showWestBoundary) {
+            spawnParticlesAlongLine(level, -radius, playerY, -radius, radius, particleCount);
+        }
+        if (showEastBoundary) {
+            spawnParticlesAlongLine(level, radius, playerY, -radius, radius, particleCount);
+        }
+    }
+    
+    // Helper method to spawn particles along a line
+    private void spawnParticlesAlongLine(ServerLevel level, double x, double y, double z1, double z2, int count) {
+        for (int i = 0; i < count; i++) {
+            double randomOffset = level.random.nextDouble() * (z2 - z1) + z1;
+            double particleY = y + level.random.nextDouble() * 3.0 - 1.0; // Random Y offset ±1 block
+            
+            // Determine if this is a vertical or horizontal line
+            if (Math.abs(z2 - z1) > Math.abs(x)) {
+                // Horizontal line (varying Z)
+                level.sendParticles(
+                    ParticleTypes.WARPED_SPORE,
+                    x, particleY, randomOffset,
+                    1, 0.0, 0.0, 0.0, 0.0
+                );
+            } else {
+                // Vertical line (varying X)
+                level.sendParticles(
+                    ParticleTypes.WARPED_SPORE,
+                    randomOffset, particleY, z1,
+                    1, 0.0, 0.0, 0.0, 0.0
+                );
+            }
+        }
+    }
 
     @SubscribeEvent
     public void onPlayerTick(PlayerTickEvent.Post event) {
@@ -181,8 +240,19 @@ public class ContaminationMod {
 
         double x = player.getX();
         double z = player.getZ();
+        int radius = getRadius();
+        
+        // Calculate distance to nearest boundary
+        double distToXBoundary = Math.abs(Math.abs(x) - radius);
+        double distToZBoundary = Math.abs(Math.abs(z) - radius);
+        double distToBoundary = Math.min(distToXBoundary, distToZBoundary);
+        
+        // Spawn particles if player is near boundary (every PARTICLE_SPAWN_INTERVAL ticks)
+        if (distToBoundary < BOUNDARY_VISIBILITY_RANGE && player.tickCount % PARTICLE_SPAWN_INTERVAL == 0) {
+            spawnBoundaryParticles(serverLevel, player, radius);
+        }
 
-        if (Math.abs(x) > getRadius() || Math.abs(z) > getRadius()) {
+        if (Math.abs(x) > radius || Math.abs(z) > radius) {
             // Player is in contamination zone
             
             // Track time spent in contamination zone
