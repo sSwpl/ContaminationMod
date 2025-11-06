@@ -162,8 +162,8 @@ public class ContaminationMod {
         boolean showWestBoundary = Math.abs(playerX + radius) < BOUNDARY_VISIBILITY_RANGE;
         boolean showEastBoundary = Math.abs(playerX - radius) < BOUNDARY_VISIBILITY_RANGE;
         
-        // Spawn particles along visible boundaries
-        int particleCount = 5; // More particles for better visibility
+        // Spawn many more particles for better visibility (100 particles per boundary)
+        int particleCount = 100;
         
         if (showNorthBoundary) {
             // North boundary (Z = -radius, X varies)
@@ -187,13 +187,16 @@ public class ContaminationMod {
     private void spawnParticlesAlongXLine(ServerLevel level, double z, double xStart, double xEnd, double playerY, int count) {
         for (int i = 0; i < count; i++) {
             double randomX = level.random.nextDouble() * (xEnd - xStart) + xStart;
-            double particleY = playerY + level.random.nextDouble() * 3.0 - 1.0; // Random Y offset ±1 block
-            
-            level.sendParticles(
-                ParticleTypes.WARPED_SPORE,
-                randomX, particleY, z,
-                1, 0.0, 0.0, 0.0, 0.0
-            );
+            // Spawn particles at multiple heights for a wall effect
+            for (int h = 0; h < 3; h++) {
+                double particleY = playerY + h * 2.0 + level.random.nextDouble() - 0.5;
+                
+                level.sendParticles(
+                    ParticleTypes.WARPED_SPORE,
+                    randomX, particleY, z,
+                    1, 0.0, 0.0, 0.0, 0.0
+                );
+            }
         }
     }
     
@@ -201,13 +204,16 @@ public class ContaminationMod {
     private void spawnParticlesAlongZLine(ServerLevel level, double x, double zStart, double zEnd, double playerY, int count) {
         for (int i = 0; i < count; i++) {
             double randomZ = level.random.nextDouble() * (zEnd - zStart) + zStart;
-            double particleY = playerY + level.random.nextDouble() * 3.0 - 1.0; // Random Y offset ±1 block
-            
-            level.sendParticles(
-                ParticleTypes.WARPED_SPORE,
-                x, particleY, randomZ,
-                1, 0.0, 0.0, 0.0, 0.0
-            );
+            // Spawn particles at multiple heights for a wall effect
+            for (int h = 0; h < 3; h++) {
+                double particleY = playerY + h * 2.0 + level.random.nextDouble() - 0.5;
+                
+                level.sendParticles(
+                    ParticleTypes.WARPED_SPORE,
+                    x, particleY, randomZ,
+                    1, 0.0, 0.0, 0.0, 0.0
+                );
+            }
         }
     }
 
