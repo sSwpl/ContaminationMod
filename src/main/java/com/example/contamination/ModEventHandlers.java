@@ -1,5 +1,6 @@
 package com.example.contamination;
 
+import com.example.contamination.registry.ModItems;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -12,6 +13,7 @@ public class ModEventHandlers {
     public static void addCreativeTabItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ContaminationMod.LUGOL);
+            event.accept(ModItems.INCOMPLETE_LUGOLS_IODINE);
         }
     }
 }

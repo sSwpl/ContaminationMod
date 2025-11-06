@@ -2,7 +2,7 @@
   "parent": "minecraft:recipes/root",
   "rewards": {
     "recipes": [
-      "contamination:uncomplete_lugols_iodine"
+      "contamination:incomplete_lugols_iodine"
     ]
   },
   "criteria": {
