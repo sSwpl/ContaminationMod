@@ -163,44 +163,51 @@ public class ContaminationMod {
         boolean showEastBoundary = Math.abs(playerX - radius) < BOUNDARY_VISIBILITY_RANGE;
         
         // Spawn particles along visible boundaries
-        int particleCount = 3; // Particles per spawn call
+        int particleCount = 5; // More particles for better visibility
         
         if (showNorthBoundary) {
-            spawnParticlesAlongLine(level, -radius, radius, -radius, playerY, particleCount);
+            // North boundary (Z = -radius, X varies)
+            spawnParticlesAlongXLine(level, -radius, -radius, radius, playerY, particleCount);
         }
         if (showSouthBoundary) {
-            spawnParticlesAlongLine(level, -radius, radius, radius, playerY, particleCount);
+            // South boundary (Z = +radius, X varies)
+            spawnParticlesAlongXLine(level, radius, -radius, radius, playerY, particleCount);
         }
         if (showWestBoundary) {
-            spawnParticlesAlongLine(level, -radius, playerY, -radius, radius, particleCount);
+            // West boundary (X = -radius, Z varies)
+            spawnParticlesAlongZLine(level, -radius, -radius, radius, playerY, particleCount);
         }
         if (showEastBoundary) {
-            spawnParticlesAlongLine(level, radius, playerY, -radius, radius, particleCount);
+            // East boundary (X = +radius, Z varies)
+            spawnParticlesAlongZLine(level, radius, -radius, radius, playerY, particleCount);
         }
     }
     
-    // Helper method to spawn particles along a line
-    private void spawnParticlesAlongLine(ServerLevel level, double x, double y, double z1, double z2, int count) {
+    // Helper method to spawn particles along a line parallel to X axis
+    private void spawnParticlesAlongXLine(ServerLevel level, double z, double xStart, double xEnd, double playerY, int count) {
         for (int i = 0; i < count; i++) {
-            double randomOffset = level.random.nextDouble() * (z2 - z1) + z1;
-            double particleY = y + level.random.nextDouble() * 3.0 - 1.0; // Random Y offset ±1 block
+            double randomX = level.random.nextDouble() * (xEnd - xStart) + xStart;
+            double particleY = playerY + level.random.nextDouble() * 3.0 - 1.0; // Random Y offset ±1 block
             
-            // Determine if this is a vertical or horizontal line
-            if (Math.abs(z2 - z1) > Math.abs(x)) {
-                // Horizontal line (varying Z)
-                level.sendParticles(
-                    ParticleTypes.WARPED_SPORE,
-                    x, particleY, randomOffset,
-                    1, 0.0, 0.0, 0.0, 0.0
-                );
-            } else {
-                // Vertical line (varying X)
-                level.sendParticles(
-                    ParticleTypes.WARPED_SPORE,
-                    randomOffset, particleY, z1,
-                    1, 0.0, 0.0, 0.0, 0.0
-                );
-            }
+            level.sendParticles(
+                ParticleTypes.WARPED_SPORE,
+                randomX, particleY, z,
+                1, 0.0, 0.0, 0.0, 0.0
+            );
+        }
+    }
+    
+    // Helper method to spawn particles along a line parallel to Z axis
+    private void spawnParticlesAlongZLine(ServerLevel level, double x, double zStart, double zEnd, double playerY, int count) {
+        for (int i = 0; i < count; i++) {
+            double randomZ = level.random.nextDouble() * (zEnd - zStart) + zStart;
+            double particleY = playerY + level.random.nextDouble() * 3.0 - 1.0; // Random Y offset ±1 block
+            
+            level.sendParticles(
+                ParticleTypes.WARPED_SPORE,
+                x, particleY, randomZ,
+                1, 0.0, 0.0, 0.0, 0.0
+            );
         }
     }
 

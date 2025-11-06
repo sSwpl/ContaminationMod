@@ -1,7 +1,6 @@
 package com.example.contamination.compat.jei;
 
 import com.example.contamination.ContaminationMod;
-import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -10,7 +9,6 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -19,14 +17,9 @@ public class BrewingCategory implements IRecipeCategory<BrewingRecipe> {
     private final IDrawable icon;
     private final IDrawable slotDrawable;
 
-    // Vanilla brewing stand GUI texture
-    private static final ResourceLocation BREWING_STAND_LOCATION = 
-        ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/brewing_stand.png");
-
     public BrewingCategory(IGuiHelper guiHelper) {
-        // Use a portion of the vanilla brewing stand texture for a more authentic look
-        // Background area showing the brewing slots (width: 64, height: 60)
-        this.background = guiHelper.createDrawable(BREWING_STAND_LOCATION, 46, 16, 64, 60);
+        // Create a clean background for the brewing recipe display
+        this.background = guiHelper.createBlankDrawable(116, 54);
         this.icon = guiHelper.createDrawableItemStack(new ItemStack(Items.BREWING_STAND));
         this.slotDrawable = guiHelper.getSlotDrawable();
     }
@@ -54,19 +47,19 @@ public class BrewingCategory implements IRecipeCategory<BrewingRecipe> {
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, BrewingRecipe recipe, IFocusGroup focuses) {
-        // Position slots to match the brewing stand interface
-        // Input bottle (bottom center)
-        builder.addSlot(RecipeIngredientRole.INPUT, 24, 36)
+        // Position slots for a clean brewing stand-like layout
+        // Input bottle (left side)
+        builder.addSlot(RecipeIngredientRole.INPUT, 1, 19)
                 .addItemStack(recipe.input())
                 .setBackground(slotDrawable, -1, -1);
         
-        // Ingredient (top center - where you put the brewing ingredient)
-        builder.addSlot(RecipeIngredientRole.CATALYST, 24, 1)
+        // Ingredient (top center - the catalyst for brewing)
+        builder.addSlot(RecipeIngredientRole.CATALYST, 40, 1)
                 .addItemStack(recipe.ingredient())
                 .setBackground(slotDrawable, -1, -1);
         
         // Output (right side)
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 42, 36)
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 81, 19)
                 .addItemStack(recipe.output())
                 .setBackground(slotDrawable, -1, -1);
     }
