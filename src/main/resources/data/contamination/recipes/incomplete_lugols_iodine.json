@@ -10,17 +10,32 @@
         }
       }
     },
-    { "item": "minecraft:dried_kelp_block" },
-    { "item": "minecraft:amethyst_shard" },
-    { "item": "minecraft:copper_ingot" },
-    { "item": "minecraft:redstone" },
-    { "item": "minecraft:glowstone_dust" },
-    { "item": "minecraft:charcoal" },
-    { "item": "minecraft:nether_wart" },
-    { "item": "minecraft:brown_mushroom" }
+    {
+      "item": "minecraft:dried_kelp_block"
+    },
+    {
+      "item": "minecraft:amethyst_shard"
+    },
+    {
+      "item": "minecraft:copper_ingot"
+    },
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "item": "minecraft:charcoal"
+    },
+    {
+      "item": "minecraft:nether_wart"
+    },
+    {
+      "item": "minecraft:brown_mushroom"
+    }
   ],
   "result": {
-    "id": "contamination:incomplete_lugols_iodine",
-    "count": 1
+    "id": "contamination:incomplete_lugols_iodine"
   }
 }
