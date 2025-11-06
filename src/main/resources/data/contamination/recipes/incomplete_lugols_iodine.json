@@ -1,8 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
-      "type": "neoforge:components",
       "item": "minecraft:potion",
       "components": {
         "minecraft:potion_contents": {
@@ -19,5 +19,8 @@
     { "item": "minecraft:nether_wart" },
     { "item": "minecraft:brown_mushroom" }
   ],
-  "result": { "id": "contamination:incomplete_lugols_iodine", "count": 1 }
+  "result": {
+    "id": "contamination:incomplete_lugols_iodine",
+    "count": 1
+  }
 }
