@@ -1,8 +1,1 @@
-{
-  "type": "minecraft:crafting_shapeless",
-  "category": "misc",
-  "ingredients": [
-    { "item": "minecraft:dirt" }
-  ],
-  "result": { "id": "contamination:incomplete_lugols_iodine", "count": 1 }
-}
+
