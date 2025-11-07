@@ -2,18 +2,18 @@
    "type": "minecraft:crafting_shapeless",
    "category": "misc",
    "ingredients": [
-     { "id": "minecraft:glass_bottle" },
-     { "id": "minecraft:dried_kelp_block" },
-     { "id": "minecraft:amethyst_shard" },
-     { "id": "minecraft:copper_ingot" },
-     { "id": "minecraft:redstone" },
-     { "id": "minecraft:glowstone_dust" },
-     { "id": "minecraft:charcoal" },
-     { "id": "minecraft:nether_wart" },
-     { "id": "minecraft:brown_mushroom" }
+     { "item": "minecraft:glass_bottle" },
+     { "item": "minecraft:dried_kelp_block" },
+     { "item": "minecraft:amethyst_shard" },
+     { "item": "minecraft:copper_ingot" },
+     { "item": "minecraft:redstone" },
+     { "item": "minecraft:glowstone_dust" },
+     { "item": "minecraft:charcoal" },
+     { "item": "minecraft:nether_wart" },
+     { "item": "minecraft:brown_mushroom" }
    ],
    "result": {
-     "id": "contamination:incomplete_lugols_iodine",
-     "count": 1
+     "count": 1,
+     "id": "contamination:incomplete_lugols_iodine"
    }
 }
