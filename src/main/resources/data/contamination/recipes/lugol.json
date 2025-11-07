@@ -9,7 +9,5 @@
       "item": "minecraft:glass_bottle"
     }
   ],
-  "result": {
-    "id": "contamination:lugol"
-  }
+  "result": "contamination:lugol"
 }
