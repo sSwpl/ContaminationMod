@@ -3,6 +3,8 @@ package com.example.contamination.registry;
 import com.example.contamination.ContaminationConfig;
 import com.example.contamination.ContaminationMod;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -21,23 +23,23 @@ public class ModBrewing {
 
         // Get the catalyst item from config
         String catalystId = ContaminationConfig.BREWING_CATALYST.get();
-        var catalystItem = Items.GHAST_TEAR; // Default to ghast tear
+        Item catalystItem = Items.GHAST_TEAR; // Default to ghast tear
         
         // Try to parse the config value
         try {
-            var parts = catalystId.split(":");
+            String[] parts = catalystId.split(":");
             if (parts.length == 2) {
-                var namespace = parts[0];
-                var path = parts[1];
-                var foundItem = BuiltInRegistries.ITEM.get(
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(namespace, path)
+                String namespace = parts[0];
+                String path = parts[1];
+                Item foundItem = BuiltInRegistries.ITEM.get(
+                    ResourceLocation.fromNamespaceAndPath(namespace, path)
                 );
                 if (foundItem != Items.AIR) {
                     catalystItem = foundItem;
                 }
             }
-        } catch (Exception e) {
-            // Use default if parsing fails
+        } catch (IllegalArgumentException e) {
+            // Invalid resource location format - use default catalyst
         }
 
         // Register the brewing recipe: INCOMPLETE_LUGOLS_IODINE + catalyst -> LUGOL
