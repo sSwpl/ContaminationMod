@@ -30,5 +30,7 @@
       "item": "minecraft:brown_mushroom"
     }
   ],
-  "result": "contamination:incomplete_lugols_iodine"
+  "result": {
+    "id": "contamination:incomplete_lugols_iodine"
+  }
 }
