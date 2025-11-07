@@ -4,13 +4,13 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 public class ContaminationCommands {
 
     @SubscribeEvent
-    public static void register(RegisterCommandsEvent event) {
+    public void register(RegisterCommandsEvent event) {
         event.getDispatcher().register(
                 Commands.literal("contamination")
                         .requires(src -> src.hasPermission(2)) // only ops by default

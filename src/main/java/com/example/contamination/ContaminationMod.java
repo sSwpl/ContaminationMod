@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -19,17 +20,16 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerBossEvent;
 
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.bus.api.IEventBus;
 
 import com.example.contamination.registry.ModItems;
 
@@ -37,39 +37,44 @@ import com.example.contamination.registry.ModItems;
 public class ContaminationMod {
     public static final String MODID = "contamination";
 
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
 
-    public static final RegistryObject<Item> LUGOL = ITEMS.register("lugol",
-            () -> new LugolItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<Item> LUGOL = ITEMS.registerItem("lugol",
+            properties -> new LugolItem(properties.stacksTo(16)));
 
     // runtime overrides (set by commands) — not persisted to config file by these commands unless saved
     private static volatile int overrideRadius = -1; // blocks
     private static volatile int overrideProtectionSeconds = -1; // seconds
 
-    // DAMAGE: zmienne z akumulacją
-    private static final float DAMAGE_PER_SECOND = 1.0f;
-    private static final float DAMAGE_PER_TICK = DAMAGE_PER_SECOND / 20.0f;
-
+    // DAMAGE: Progressive damage system - increases over time in contamination zone
+    private static final float BASE_DAMAGE_PER_SECOND = 0.5f;  // Starting damage
+    private static final float MAX_DAMAGE_PER_SECOND = 4.0f;   // Maximum damage cap
+    private static final int TICKS_TO_MAX_DAMAGE = 20 * 30;    // 30 seconds to reach max damage
+    
+    // VISUAL: Boundary visualization system
+    private static final int BOUNDARY_VISIBILITY_RANGE = 50;   // Blocks from boundary where particles appear
+    private static final int PARTICLE_SPAWN_INTERVAL = 2;      // Ticks between particle spawns (every 0.1 seconds)
+    
     // Fallback protection seconds if config missing
     private static final int FALLBACK_PROTECTION_SECONDS = 60;
 
     // mapa graczUUID -> ServerBossEvent
     private static final Map<UUID, ServerBossEvent> BOSS_BARS = new ConcurrentHashMap<>();
 
-    public ContaminationMod() {
+    public ContaminationMod(IEventBus modBus, ModContainer modContainer) {
         // register config
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ContaminationConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, ContaminationConfig.SPEC);
 
         // Rejestr istniejących itemów (w tym 'lugol')
-        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ITEMS.register(modBus);
 
         // Rejestr nowych itemów (półprodukt do warzenia)
-        ModItems.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ModItems.register(modBus);
 
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
 
         // register command listener
-        MinecraftForge.EVENT_BUS.register(new ContaminationCommands());
+        NeoForge.EVENT_BUS.register(new ContaminationCommands());
     }
 
     // Config-aware getters
@@ -144,11 +149,77 @@ public class ContaminationMod {
         int seconds = totalSeconds % 60;
         return String.format("%d:%02d", minutes, seconds);
     }
+    
+    // Spawn particles to visualize the contamination zone boundary
+    private void spawnBoundaryParticles(ServerLevel level, Player player, int radius) {
+        double playerX = player.getX();
+        double playerY = player.getY();
+        double playerZ = player.getZ();
+        
+        // Determine which boundaries to show based on player position
+        boolean showNorthBoundary = Math.abs(playerZ + radius) < BOUNDARY_VISIBILITY_RANGE;
+        boolean showSouthBoundary = Math.abs(playerZ - radius) < BOUNDARY_VISIBILITY_RANGE;
+        boolean showWestBoundary = Math.abs(playerX + radius) < BOUNDARY_VISIBILITY_RANGE;
+        boolean showEastBoundary = Math.abs(playerX - radius) < BOUNDARY_VISIBILITY_RANGE;
+        
+        // Spawn many more particles for better visibility (100 particles per boundary)
+        int particleCount = 100;
+        
+        if (showNorthBoundary) {
+            // North boundary (Z = -radius, X varies)
+            spawnParticlesAlongXLine(level, -radius, -radius, radius, playerY, particleCount);
+        }
+        if (showSouthBoundary) {
+            // South boundary (Z = +radius, X varies)
+            spawnParticlesAlongXLine(level, radius, -radius, radius, playerY, particleCount);
+        }
+        if (showWestBoundary) {
+            // West boundary (X = -radius, Z varies)
+            spawnParticlesAlongZLine(level, -radius, -radius, radius, playerY, particleCount);
+        }
+        if (showEastBoundary) {
+            // East boundary (X = +radius, Z varies)
+            spawnParticlesAlongZLine(level, radius, -radius, radius, playerY, particleCount);
+        }
+    }
+    
+    // Helper method to spawn particles along a line parallel to X axis
+    private void spawnParticlesAlongXLine(ServerLevel level, double z, double xStart, double xEnd, double playerY, int count) {
+        for (int i = 0; i < count; i++) {
+            double randomX = level.random.nextDouble() * (xEnd - xStart) + xStart;
+            // Spawn particles at multiple heights for a wall effect
+            for (int h = 0; h < 3; h++) {
+                double particleY = playerY + h * 2.0 + level.random.nextDouble() - 0.5;
+                
+                level.sendParticles(
+                    ParticleTypes.WARPED_SPORE,
+                    randomX, particleY, z,
+                    1, 0.0, 0.0, 0.0, 0.0
+                );
+            }
+        }
+    }
+    
+    // Helper method to spawn particles along a line parallel to Z axis
+    private void spawnParticlesAlongZLine(ServerLevel level, double x, double zStart, double zEnd, double playerY, int count) {
+        for (int i = 0; i < count; i++) {
+            double randomZ = level.random.nextDouble() * (zEnd - zStart) + zStart;
+            // Spawn particles at multiple heights for a wall effect
+            for (int h = 0; h < 3; h++) {
+                double particleY = playerY + h * 2.0 + level.random.nextDouble() - 0.5;
+                
+                level.sendParticles(
+                    ParticleTypes.WARPED_SPORE,
+                    x, particleY, randomZ,
+                    1, 0.0, 0.0, 0.0, 0.0
+                );
+            }
+        }
+    }
 
     @SubscribeEvent
-    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-        Player player = event.player;
+    public void onPlayerTick(PlayerTickEvent.Post event) {
+        Player player = event.getEntity();
 
         Level level = player.level();
         if (level.isClientSide) return;
@@ -182,10 +253,36 @@ public class ContaminationMod {
 
         double x = player.getX();
         double z = player.getZ();
+        int radius = getRadius();
+        
+        // Calculate distance to nearest boundary
+        double distToXBoundary = Math.abs(Math.abs(x) - radius);
+        double distToZBoundary = Math.abs(Math.abs(z) - radius);
+        double distToBoundary = Math.min(distToXBoundary, distToZBoundary);
+        
+        // Spawn particles if player is near boundary (every PARTICLE_SPAWN_INTERVAL ticks)
+        if (distToBoundary < BOUNDARY_VISIBILITY_RANGE && player.tickCount % PARTICLE_SPAWN_INTERVAL == 0) {
+            spawnBoundaryParticles(serverLevel, player, radius);
+        }
 
-        if (Math.abs(x) > getRadius() || Math.abs(z) > getRadius()) {
+        if (Math.abs(x) > radius || Math.abs(z) > radius) {
+            // Player is in contamination zone
+            
+            // Track time spent in contamination zone
+            int ticksInZone = pd.contains("contamination_ticks_in_zone") ? pd.getInt("contamination_ticks_in_zone") : 0;
+            ticksInZone++;
+            pd.putInt("contamination_ticks_in_zone", ticksInZone);
+            
+            // Calculate progressive damage based on time in zone
+            // Damage increases linearly from BASE_DAMAGE to MAX_DAMAGE over TICKS_TO_MAX_DAMAGE
+            float damageProgress = Math.min(1.0f, (float) ticksInZone / TICKS_TO_MAX_DAMAGE);
+            float currentDamagePerSecond = BASE_DAMAGE_PER_SECOND + (MAX_DAMAGE_PER_SECOND - BASE_DAMAGE_PER_SECOND) * damageProgress;
+            float damagePerTick = currentDamagePerSecond / 20.0f;
+            
+            // Accumulate damage (fractional damage is stored until it reaches 1.0)
             double acc = pd.contains("contamination_damage_acc") ? pd.getDouble("contamination_damage_acc") : 0.0;
-            acc += DAMAGE_PER_TICK;
+            acc += damagePerTick;
+            
             if (acc >= 1.0) {
                 int apply = (int) Math.floor(acc);
                 pd.putDouble("contamination_damage_acc", acc - apply);
@@ -194,7 +291,9 @@ public class ContaminationMod {
                 pd.putDouble("contamination_damage_acc", acc);
             }
         } else {
+            // Player is in safe zone - reset contamination tracking
             if (pd.contains("contamination_damage_acc")) pd.remove("contamination_damage_acc");
+            if (pd.contains("contamination_ticks_in_zone")) pd.remove("contamination_ticks_in_zone");
             if (player instanceof ServerPlayer serverPlayer) {
                 if (BOSS_BARS.containsKey(player.getUUID())) removeBossBarForPlayer(serverPlayer);
             }

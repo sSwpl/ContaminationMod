@@ -17,7 +17,7 @@ import java.util.List;
 
 @JeiPlugin
 public class ContaminationJeiPlugin implements IModPlugin {
-    public static final ResourceLocation UID = new ResourceLocation(ContaminationMod.MODID, "jei_plugin");
+    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ContaminationMod.MODID, "jei_plugin");
     public static final RecipeType<BrewingRecipe> LUGOL_BREWING =
             RecipeType.create(ContaminationMod.MODID, "lugol_brewing", BrewingRecipe.class);
 
@@ -34,8 +34,11 @@ public class ContaminationJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        // JEI automatycznie pokaże crafting z JSON (incomplete_lugols_iodine.json)
-        // Tutaj tylko warzenie: INCOMPLETE + Ghast Tear -> LUGOL
+        // The crafting recipe for incomplete_lugols_iodine is defined in
+        // data/contamination/recipes/incomplete_lugols_iodine.json
+        // JEI will automatically discover it from the recipe manager
+        
+        // Register custom brewing recipe: INCOMPLETE + Ghast Tear -> LUGOL
         ItemStack input = new ItemStack(ModItems.INCOMPLETE_LUGOLS_IODINE.get());
         ItemStack ingredient = new ItemStack(Items.GHAST_TEAR);
         ItemStack output = new ItemStack(ContaminationMod.LUGOL.get());
