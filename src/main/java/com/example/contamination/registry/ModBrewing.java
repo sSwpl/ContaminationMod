@@ -7,25 +7,53 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.brewing.BrewingRecipe;
+import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@EventBusSubscriber(modid = "contamination", bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = "contamination", bus = EventBusSubscriber.Bus.GAME)
 public class ModBrewing {
-    @SubscribeEvent
-    public static void onCommonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> {
-            if (!ContaminationConfig.ENABLE_LUGOL_BREWING.get()) {
-                return;
-            }
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModBrewing.class);
 
-            // TODO: NeoForge 1.21.1 brewing recipe registration
-            // The PotionBrewing API has changed significantly in 1.21.1
-            // Brewing recipes now need to be registered through data packs or a different mechanism
-            // For now, brewing is disabled until the proper API is implemented
-            // The item can still be crafted through the crafting table recipe
-        });
+    @SubscribeEvent
+    public static void onRegisterBrewingRecipes(final RegisterBrewingRecipesEvent event) {
+        if (!ContaminationConfig.ENABLE_LUGOL_BREWING.get()) {
+            return;
+        }
+
+        // Get the catalyst item from config
+        String catalystId = ContaminationConfig.BREWING_CATALYST.get();
+        Item catalystItem = Items.GHAST_TEAR; // Default to ghast tear
+        
+        // Try to parse the config value
+        try {
+            ResourceLocation resourceLocation = ResourceLocation.tryParse(catalystId);
+            if (resourceLocation != null) {
+                Item foundItem = BuiltInRegistries.ITEM.get(resourceLocation);
+                if (foundItem != Items.AIR) {
+                    catalystItem = foundItem;
+                } else {
+                    LOGGER.warn("Brewing catalyst item '{}' not found in registry, using default (ghast_tear)", catalystId);
+                }
+            } else {
+                LOGGER.warn("Invalid brewing catalyst resource location '{}', using default (ghast_tear)", catalystId);
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Error parsing brewing catalyst config '{}', using default (ghast_tear): {}", catalystId, e.getMessage());
+        }
+
+        // Register the brewing recipe: INCOMPLETE_LUGOLS_IODINE + catalyst -> LUGOL
+        // Using NeoForge's custom BrewingRecipe for non-potion items
+        event.getBuilder().addRecipe(
+            new BrewingRecipe(
+                Ingredient.of(ModItems.INCOMPLETE_LUGOLS_IODINE.get()),
+                Ingredient.of(catalystItem),
+                new ItemStack(ContaminationMod.LUGOL.get())
+            )
+        );
     }
 }
